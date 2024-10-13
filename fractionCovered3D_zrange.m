@@ -5,8 +5,8 @@ loadData = 1; % 1 for yes, 0 for no
 addpath('data')
 if loadData == 1
     clear all;
-    E = tiffreadVolume('data/J7784-BV1-10nm-EC.tif'); % endothelium
-    P = tiffreadVolume('data/J7784-BV1-10nm-PC.tif'); % pericyte
+    endotheliumImg = tiffreadVolume('data/J7568-EPI-BV1-5nm-EC.tif'); % endothelium
+    pericyteImg = tiffreadVolume('data/J7568-EPI-BV1-5nm-PC.tif'); % pericyte
 end
 
 % if plotting results plt = 1, if not plt =0
@@ -18,35 +18,35 @@ coveredDistance = 150; % nm
 
 % dimensions
 dz = 70; %nm
-dx = 10; %nm
-dy = 10; %nm
+dx = 5; %nm
+dy = 5; %nm
 
 % size of images
-s  = size(E); xL = s(2); yL = s(1); zL = s(3);
+s  = size(endotheliumImg); xLength = s(2); yLength = s(1); zLength = s(3);
 
-%if plot looks ridicululous - uncomment this
-% s  = size(E); xL = s(1); yL = s(2); zL = s(3);
+%if plot looks ridicululous i.e; x and y axis values are reversed - uncomment this
+% s  = size(E); xLength = s(1); yLength = s(2); zLength = s(3);
+
+% find edges
+endotheliumPerimeter = bwperim(endotheliumImg,4);
+pericytePerimeter = bwperim(pericyteImg,4);
 
 % X and Y coordinates of all image pixels
-[X,Y] = meshgrid((1:xL),(1:yL));
+[X,Y] = meshgrid((1:xLength),(1:yLength));
 X = X.*dx;
 Y = Y.*dy;
 
-z0 = 1;
+zSliceStart = 1;
 
-z = (1 : zL) .* dz;
+zSlices = (1 : zLength) .* dz;
 
 % Define the range of z-slices to analyze
-z_min = 140; % Example minimum z-slice
-z_max = 290; % Example maximum z-slice
+z_min = 204; % Example minimum z-slice
+z_max = 354; % Example maximum z-slice
 
 % Ensure the range is within the available slices
-z_min = max(z_min, z0);
-z_max = min(z_max, zL);
-
-% find edges
-ee = bwperim(E,4);
-pe = bwperim(P,4);
+z_min = max(z_min, zSliceStart);
+z_max = min(z_max, zLength);
 
 n = floor(coveredDistance/dz);
 
@@ -63,14 +63,14 @@ for i = z_min : z_max
     uCon = [];
     uCov = [];
 
-    e(:,:) = ee(:,:,i);
+    e(:,:) = endotheliumPerimeter(:,:,i);
     ie = find(e==1);
 
     for j = J      
-        p(:,:) = pe(:,:,j);  
+        p(:,:) = pericytePerimeter(:,:,j);  
         ip = find(p==1);
 
-        d = sqrt( (X(ie)-X(ip)').^2 + (Y(ie)-Y(ip)').^2 + (z(i)-z(j)).^2);
+        d = sqrt( (X(ie)-X(ip)').^2 + (Y(ie)-Y(ip)').^2 + (zSlices(i)-zSlices(j)).^2);
         [rowCon, ~] = find(d<contactDistance);
         [rowCov, ~] = find(d<coveredDistance);
 
@@ -86,8 +86,8 @@ for i = z_min : z_max
     xxCov = X(ie(uCov));
     yyCov = Y(ie(uCov));
 
-    e(:,:) = ee(:,:,i);
-    p(:,:) = pe(:,:,i);
+    e(:,:) = endotheliumPerimeter(:,:,i);
+    p(:,:) = pericytePerimeter(:,:,i);
 
     numConPixels = length(xxCon);
     numCovPixels = length(xxCov);
@@ -97,7 +97,7 @@ for i = z_min : z_max
     fCov = fCov + numCovPixels;
     fTot = fTot + numEndoPixels;
 
-    fprintf('Time left: %g min - frac covered: %g - frac connected: %g \n',(zL-i) .* toc./60, fCov./fTot, fCon./fTot)
+    fprintf('Time left: %g min - frac covered: %g - frac connected: %g \n',(zLength-i) .* toc./60, fCov./fTot, fCon./fTot)
 
      if plt==1
 
@@ -107,7 +107,7 @@ for i = z_min : z_max
         plot(X(ip),Y(ip),'.','color',[253,191,111]./255)
         plot(xxCov,yyCov,'b.')
         plot(xxCon,yyCon,'r.')
-        axis([0 xL.*dx 0 yL.*dy]); axis equal
+        axis([0 xLength.*dx 0 yLength.*dy]); axis equal
         set(gca,'box','on','linewidth',2)
         pause(0); drawnow
 
