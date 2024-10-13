@@ -42,34 +42,34 @@ zSliceStart = 1;
 zSlices = (1 : zLength) .* dz;
 
 % Define the range of z-slices to analyze
-z_min = 204; % Example minimum z-slice
-z_max = 354; % Example maximum z-slice
+zMin = 204; % Example minimum z-slice
+zMax = 354; % Example maximum z-slice
 
 % Ensure the range is within the available slices
-z_min = max(z_min, zSliceStart);
-z_max = min(z_max, zLength);
+zMin = max(zMin, zSliceStart);
+zMax = min(zMax, zLength);
 
-n = floor(depthDistance/dz);
+depthSliceRange = floor(depthDistance/dz);
 
-fCon = 0;
-fCov = 0;
-fTot = 0;
+totalConnected = 0;
+totalCovered = 0;
+totalEndothelium = 0;
 
 % Loop through the specified z-slices range
-for i = z_min : z_max
+for i = zMin : zMax
     tic
 
-    neighborZSlices = max(z_min,i-n) : min(z_max,i+n);
+    neighborZSlices = max(zMin,i-depthSliceRange) : min(zMax,i+depthSliceRange);
 
-    contactPerimIndices = [];
-    coveragePerimIndices = [];
+    contactPerimeterIndices = [];
+    coveragePerimeterIndices = [];
 
     endotheliumPerimeter2d(:,:) = endotheliumPerimeter3d(:,:,i);
     endotheliumPerimeterIndices = find(endotheliumPerimeter2d==1);
 
     for j = neighborZSlices      
-        p(:,:) = pericytePerimeter3d(:,:,j);  
-        ip = find(p==1);
+        pericytePerimeter2d(:,:) = pericytePerimeter3d(:,:,j);  
+        ip = find(pericytePerimeter2d==1);
 
         distanceMatrix = sqrt((X(endotheliumPerimeterIndices)-X(ip)').^2 ...
             + (Y(endotheliumPerimeterIndices)-Y(ip)').^2 ...
@@ -78,39 +78,39 @@ for i = z_min : z_max
         [contactPointIndices, ~] = find(distanceMatrix<contactDistance);
         [coveragePointIndices, ~] = find(distanceMatrix<coveredDistance);
 
-        contactPerimIndices = [contactPerimIndices; contactPointIndices];
-        coveragePerimIndices = [coveragePerimIndices; coveragePointIndices];
+        contactPerimeterIndices = [contactPerimeterIndices; contactPointIndices];
+        coveragePerimeterIndices = [coveragePerimeterIndices; coveragePointIndices];
     end
 
-    contactPerimIndices = unique(contactPerimIndices);
-    xxCon = X(endotheliumPerimeterIndices(contactPerimIndices));
-    yyCon = Y(endotheliumPerimeterIndices(contactPerimIndices));
+    contactPerimeterIndices = unique(contactPerimeterIndices);
+    xContactPoints = X(endotheliumPerimeterIndices(contactPerimeterIndices));
+    yContactPoints = Y(endotheliumPerimeterIndices(contactPerimeterIndices));
 
-    coveragePerimIndices = unique(coveragePerimIndices);
-    xxCov = X(endotheliumPerimeterIndices(coveragePerimIndices));
-    yyCov = Y(endotheliumPerimeterIndices(coveragePerimIndices));
+    coveragePerimeterIndices = unique(coveragePerimeterIndices);
+    xCoveragePoints = X(endotheliumPerimeterIndices(coveragePerimeterIndices));
+    yCoveragePoints = Y(endotheliumPerimeterIndices(coveragePerimeterIndices));
 
     endotheliumPerimeter2d(:,:) = endotheliumPerimeter3d(:,:,i);
-    p(:,:) = pericytePerimeter3d(:,:,i);
+    pericytePerimeter2d(:,:) = pericytePerimeter3d(:,:,i);
 
-    numConPixels = length(xxCon);
-    numCovPixels = length(xxCov);
-    numEndoPixels = length(endotheliumPerimeterIndices);
+    numContactPixels = length(xContactPoints);
+    numCoveragePixels = length(xCoveragePoints);
+    numEndotheliumPixels = length(endotheliumPerimeterIndices);
 
-    fCon = fCon + numConPixels;
-    fCov = fCov + numCovPixels;
-    fTot = fTot + numEndoPixels;
+    totalConnected = totalConnected + numContactPixels;
+    totalCovered = totalCovered + numCoveragePixels;
+    totalEndothelium = totalEndothelium + numEndotheliumPixels;
 
-    fprintf('Time left: %g min - frac covered: %g - frac connected: %g \n',(zLength-i) .* toc./60, fCov./fTot, fCon./fTot)
+    fprintf('Time left: %g min - frac covered: %g - frac connected: %g \n',(zLength-i) .* toc./60, totalCovered./totalEndothelium, totalConnected./totalEndothelium)
 
      if plt==1
 
-        ip = find(p==1);
+        ip = find(pericytePerimeter2d==1);
         figure(1); cla; hold on;
         plot(X(endotheliumPerimeterIndices),Y(endotheliumPerimeterIndices),'.','color',[179,205,227]./255)
         plot(X(ip),Y(ip),'.','color',[253,191,111]./255)
-        plot(xxCov,yyCov,'b.')
-        plot(xxCon,yyCon,'r.')
+        plot(xCoveragePoints,yCoveragePoints,'b.')
+        plot(xContactPoints,yContactPoints,'r.')
         axis([0 xLength.*dx 0 yLength.*dy]); axis equal
         set(gca,'box','on','linewidth',2)
         pause(0); drawnow
@@ -126,8 +126,8 @@ for i = z_min : z_max
 
 end
 
-fracConnected = fCon./fTot;
-fracCovered = fCov./fTot;
+fracConnected = totalConnected./totalEndothelium;
+fracCovered = totalCovered./totalEndothelium;
 
 fprintf('Fraction connected: %g \n Fraction covered: %g ',fracConnected,fracCovered)
 
