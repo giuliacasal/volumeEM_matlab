@@ -14,7 +14,8 @@ plt = 1;
 
 % threshold distance
 contactDistance = 30; % nm
-coveredDistance = 150; % nm
+coveredDistance = 200; % nm
+depthDistance = 150; % nm
 
 % dimensions
 dz = 70; %nm
@@ -27,9 +28,13 @@ s  = size(endotheliumImg); xLength = s(2); yLength = s(1); zLength = s(3);
 %if plot looks ridicululous i.e; x and y axis values are reversed - uncomment this
 % s  = size(E); xLength = s(1); yLength = s(2); zLength = s(3);
 
-% find edges
-endotheliumPerimeter = bwperim(endotheliumImg,4);
-pericytePerimeter = bwperim(pericyteImg,4);
+% find perimeter
+endotheliumPerimeter3d = bwperim(endotheliumImg,4);
+pericytePerimeter3d = bwperim(pericyteImg,4);
+
+% sample perimeter slice
+samplePerimeterSlice = endotheliumPerimeter3d(:,:,round(zLength/2));
+estimatedPerimeterPointsPerSlice = floor(nnz(samplePerimeterSlice) * 1.5); 
 
 % X and Y coordinates of all image pixels
 [X,Y] = meshgrid((1:xLength),(1:yLength));
@@ -48,7 +53,7 @@ z_max = 354; % Example maximum z-slice
 z_min = max(z_min, zSliceStart);
 z_max = min(z_max, zLength);
 
-n = floor(coveredDistance/dz);
+n = floor(depthDistance/dz);
 
 fCon = 0;
 fCov = 0;
@@ -58,40 +63,42 @@ fTot = 0;
 for i = z_min : z_max
     tic
 
-    J = max(z_min,i-n) : min(z_max,i+n);
+    neighborZSlices = max(z_min,i-n) : min(z_max,i+n);
+    endotheliumPerimeter2d(:,:) = endotheliumPerimeter3d(:,:,i);
+    endotheliumPerimeterIndices = find(endotheliumPerimeter2d==1);
 
-    uCon = [];
-    uCov = [];
+    contactPerimIndices = [];
+    coveragePerimIndices = [];
 
-    e(:,:) = endotheliumPerimeter(:,:,i);
-    ie = find(e==1);
+    for j = neighborZSlices      
+        pericytePerimeter2d(:,:) = pericytePerimeter3d(:,:,j);  
+        pericytePerimeterIndices = find(pericytePerimeter2d==1);
 
-    for j = J      
-        p(:,:) = pericytePerimeter(:,:,j);  
-        ip = find(p==1);
+        distanceMatrix = sqrt((X(endotheliumPerimeterIndices)-X(pericytePerimeterIndices)').^2 ...
+            + (Y(endotheliumPerimeterIndices)-Y(pericytePerimeterIndices)').^2 ...
+            + (zSlices(i)-zSlices(j)).^2);
 
-        d = sqrt( (X(ie)-X(ip)').^2 + (Y(ie)-Y(ip)').^2 + (zSlices(i)-zSlices(j)).^2);
-        [rowCon, ~] = find(d<contactDistance);
-        [rowCov, ~] = find(d<coveredDistance);
+        [contactPointIndices, ~] = find(distanceMatrix<contactDistance);
+        [coveragePointIndices, ~] = find(distanceMatrix<coveredDistance);
 
-        uCon = [uCon; rowCon];
-        uCov = [uCov; rowCov];
+        contactPerimIndices = [contactPerimIndices; contactPointIndices];
+        coveragePerimIndices = [coveragePerimIndices; coveragePointIndices];
     end
 
-    uCon = unique(uCon);
-    xxCon = X(ie(uCon));
-    yyCon = Y(ie(uCon));
+    contactPerimIndices = unique(contactPerimIndices);
+    xxCon = X(endotheliumPerimeterIndices(contactPerimIndices));
+    yyCon = Y(endotheliumPerimeterIndices(contactPerimIndices));
 
-    uCov = unique(uCov);
-    xxCov = X(ie(uCov));
-    yyCov = Y(ie(uCov));
+    coveragePerimIndices = unique(coveragePerimIndices);
+    xxCov = X(endotheliumPerimeterIndices(coveragePerimIndices));
+    yyCov = Y(endotheliumPerimeterIndices(coveragePerimIndices));
 
-    e(:,:) = endotheliumPerimeter(:,:,i);
-    p(:,:) = pericytePerimeter(:,:,i);
+    endotheliumPerimeter2d(:,:) = endotheliumPerimeter3d(:,:,i);
+    pericytePerimeter2d(:,:) = pericytePerimeter3d(:,:,i);
 
     numConPixels = length(xxCon);
     numCovPixels = length(xxCov);
-    numEndoPixels = length(ie);
+    numEndoPixels = length(endotheliumPerimeterIndices);
 
     fCon = fCon + numConPixels;
     fCov = fCov + numCovPixels;
@@ -101,10 +108,10 @@ for i = z_min : z_max
 
      if plt==1
 
-        ip = find(p==1);
+        pericytePerimeterIndices = find(pericytePerimeter2d==1);
         figure(1); cla; hold on;
-        plot(X(ie),Y(ie),'.','color',[179,205,227]./255)
-        plot(X(ip),Y(ip),'.','color',[253,191,111]./255)
+        plot(X(endotheliumPerimeterIndices),Y(endotheliumPerimeterIndices),'.','color',[179,205,227]./255)
+        plot(X(pericytePerimeterIndices),Y(pericytePerimeterIndices),'.','color',[253,191,111]./255)
         plot(xxCov,yyCov,'b.')
         plot(xxCon,yyCon,'r.')
         axis([0 xLength.*dx 0 yLength.*dy]); axis equal
