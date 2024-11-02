@@ -114,6 +114,7 @@ writetable(T,sprintf('%s/pegPositions.csv',dataName))
 
 figure(8); cla; hold on; axis equal; set(gca,'box','on')
 plot3(y_peg,x_peg,z_peg,'ko')
+
 for i = 1 : length(z)
 
     peg(:,:) =  PegImg(:,:,i);
@@ -124,17 +125,67 @@ for i = 1 : length(z)
     b_nuc = bwboundaries(nuc);
 
     for j = 1 : length(b_peg)
-        plot3( x(b_peg{j}(:,1)), y(b_peg{j}(:,2)),z(i).*ones(size(b_peg{j}(:,2))), 'color', [228,26,28]./255)
+        plot3( y(b_peg{j}(:,1)), x(b_peg{j}(:,2)),z(i).*ones(size(b_peg{j}(:,2))), 'color', [228,26,28]./255)
     end
 
     for j = 1 : length(b_nuc)
-        plot3( x(b_nuc{j}(:,1)), y(b_nuc{j}(:,2)),z(i).*ones(size(b_nuc{j}(:,2))), 'color', [179,205,227]./255  )
+        plot3( y(b_nuc{j}(:,1)), x(b_nuc{j}(:,2)),z(i).*ones(size(b_nuc{j}(:,2))), 'color', [179,205,227]./255  )
     end
 
     pause(0); drawnow
 end
+% Script to plot histogram with smoothed distribution line in micrometers
+% Make sure `d_peg` data is loaded in your MATLAB workspace before running this script
+
+% Convert d_peg from nanometers to micrometers
+d_peg_micrometers = d_peg / 1000;
+
+% Plot the histogram with 20 bins, normalized as probability density
+figure;
+histogram(d_peg_micrometers, 'NumBins', 20, 'Normalization', 'pdf');
+hold on;
+
+% Calculate the histogram counts and bin edges
+[counts, binEdges] = histcounts(d_peg_micrometers, 'NumBins', 20, 'Normalization', 'pdf');
+binCenters = binEdges(1:end-1) + diff(binEdges)/2;
+
+% Interpolate to smooth the line with 200 points
+xq = linspace(min(binCenters), max(binCenters), 200); % More points for a smoother curve
+smoothedCounts = interp1(binCenters, counts, xq, 'spline'); % Spline interpolation for smoothness
+
+% Set any negative values in the smoothed line to zero
+smoothedCounts(smoothedCounts < 0) = 0;
+
+% Plot the smoothed line
+plot(xq, smoothedCounts, 'LineWidth', 2);
+
+% Add labels and title
+xlabel('Distance (\mum)'); % Update units to micrometers
+ylabel('Probability Density');
+title('Histogram of Minimum Distances with Smoothed Distribution Curve in Micrometers');
+grid on;
+
+% Release the hold on the current figure
+hold off;
+
+% Release the hold on the current figure
+hold off;
 
 
+% for j = 1:n_peg
+%     % Get the starting point (peg centroid)
+%     startY = x_peg(j);
+%     startX = y_peg(j);
+%     startZ = z_peg(j);
+%   
+%     endY = x_nuc_min(j);
+%     endX = y_nuc_min(j);
+%     endZ = z_nuc_min(j);
+%   
+%     plot3([startX, endX], [startY, endY], [startZ, endZ], 'k--');
+% 
+%     pause(0); drawnow
+% end
 
 view(45,15)
-exportgraphics(gcf,sprintf('%s/3Dplot.png',dataName),'resolution',1000)
+% exportgraphics(gcf,sprintf('%s/3Dplot.png',dataName),'resolution',1000)
