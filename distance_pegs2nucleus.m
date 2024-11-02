@@ -80,19 +80,25 @@ end
 
 d_peg = zeros(n_peg,n_nuc);
 
+% store the min distance co-ordinate of the nucleus
+x_nuc_min = [];
+y_nuc_min = [];
+z_nuc_min = [];
 
-for i = 1 : n_nuc
-   
-     % going through all pegs
-    for j = 1 : n_peg
+ % going through all pegs
+for j = 1 : n_peg
 
-        % finding distance between peg centre and all nucleus pixels
-        dis = sqrt( ( x_peg(j) - x_nuc ).^2 + ( y_peg(j) - y_nuc ).^2 + ( z_peg(j) - z_nuc) .^2 ) ; 
+    % finding distance between peg centre and all nucleus pixels
+    dis = sqrt( ( x_peg(j) - x_nuc ).^2 + ( y_peg(j) - y_nuc ).^2 + ( z_peg(j) - z_nuc) .^2 ) ; 
 
-        % finding the minimum of those distances
-        d_peg(j,i) = min(dis);
+    % finding the minimum of those distances
+    [d_peg(j,1), min_idx] = min(dis);
 
-    end
+    % storing the x, y, z coordinates of the nucleus with the shortest distance
+    x_nuc_min(j,1) = x_nuc(min_idx);
+    y_nuc_min(j,1) = y_nuc(min_idx);
+    z_nuc_min(j,1) = z_nuc(min_idx);
+
 end
 
 T = array2table([x_peg, y_peg, z_peg, d_peg]);
@@ -126,8 +132,9 @@ for i = 1 : length(z)
     end
 
     pause(0); drawnow
-     
-
 end
+
+
+
 view(45,15)
 exportgraphics(gcf,sprintf('%s/3Dplot.png',dataName),'resolution',1000)
