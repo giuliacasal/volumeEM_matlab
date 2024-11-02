@@ -5,8 +5,8 @@ loadData = 1; % 1 for yes, 0 for no
 addpath('data')
 if loadData == 1
     clear all;
-    endotheliumImg = tiffreadVolume('data/J7568-EPI-BV1-5nm-EC.tif'); % endothelium
-    pericyteImg = tiffreadVolume('data/J7568-EPI-BV1-5nm-PC.tif'); % pericyte
+    endotheliumImg = tiffreadVolume('data/j7784_bv2_10nm_ECfilled.tif'); % endothelium
+    pericyteImg = tiffreadVolume('data/j7784_bv2_10nm_PC.tif'); % pericyte
 end
 
 % if plotting results plt = 1, if not plt =0
@@ -14,13 +14,13 @@ plt = 1;
 
 % threshold distance
 contactDistance = 30; % nm
-coveredDistance = 200; % nm
+coveredDistance = 150; % nm
 depthDistance = 150; % nm
 
 % dimensions
 dz = 70; %nm
-dx = 5; %nm
-dy = 5; %nm
+dx = 10; %nm
+dy = 10; %nm
 
 % size of images
 s  = size(endotheliumImg); xLength = s(2); yLength = s(1); zLength = s(3);
@@ -42,8 +42,8 @@ zSliceStart = 1;
 zSlices = (1 : zLength) .* dz;
 
 % Define the range of z-slices to analyze
-zMin = 204; % Example minimum z-slice
-zMax = 354; % Example maximum z-slice
+zMin = 290; % Example minimum z-slice
+zMax = 299; % Example maximum z-slice
 
 % Ensure the range is within the available slices
 zMin = max(zMin, zSliceStart);

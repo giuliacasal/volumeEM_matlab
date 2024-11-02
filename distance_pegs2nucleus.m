@@ -1,20 +1,16 @@
-
 % would you like to load yuour data?
 loadData = 1; % 1 for yes, 0 for no
 
-
-dataName = 'J7568-bv-2';
+dataName = 'J7785a_BV1';
 
 addpath('data')
 if loadData == 1
     clearvars -except dataName;
-    PericytePegImg = tiffreadVolume(sprintf('data/%s_10nm_ECpeg.tif',dataName)); % pericyte
-    PericyteNucleusImg = tiffreadVolume(sprintf('data/%s_10nm_ECnucleus_Nuc2.tif',dataName)); % pericyte
+    PegImg = tiffreadVolume(sprintf('data/%s_10nm_PCpegs.tif',dataName)); % pericyte
+    NucleusImg = tiffreadVolume(sprintf('data/%s_10nm_ECnuc.tif',dataName)); % pericyte
 end
 
 mkdir(sprintf('%s',dataName))
-
-
 
 % Binary matrix representing the perimeter of the pericyte in 3D
 % (generated using bwperim)
@@ -26,7 +22,7 @@ dy = 10; % y-dimension (nm)
 dz = 70; % z-dimension (nm)
 
 % dims
-s = size(PericytePegImg);
+s = size(PegImg);
 
 % 3D mesh
 x = (1:s(1)).*dx;
@@ -35,8 +31,8 @@ z = (1:s(3)).*dz;
 [Y,X,Z] = meshgrid(x,y,z);
 
 % rici's connected components
-cc_peg = bwconncomp(PericytePegImg);
-cc_nuc = bwconncomp(PericyteNucleusImg);
+cc_peg = bwconncomp(PegImg);
+cc_nuc = bwconncomp(NucleusImg);
 
 % number of nuclei and pegs
 n_peg = cc_peg.NumObjects;
@@ -72,7 +68,7 @@ z_nuc = [];
 
 for i = 1 : length(z)
 
-      nuc(:,:) =  PericyteNucleusImg(:,:,i);
+      nuc(:,:) =  NucleusImg(:,:,i);
        
         b_nuc = bwboundaries(nuc);
 
@@ -124,9 +120,9 @@ figure(8); cla; hold on; axis equal; set(gca,'box','on')
 plot3(y_peg,x_peg,z_peg,'ko')
 for i = 1 : length(z)
 
-    peg(:,:) =  PericytePegImg(:,:,i);
+    peg(:,:) =  PegImg(:,:,i);
 
-     nuc(:,:) =  PericyteNucleusImg(:,:,i);
+     nuc(:,:) =  NucleusImg(:,:,i);
 
     b_peg = bwboundaries(peg);
     b_nuc = bwboundaries(nuc);

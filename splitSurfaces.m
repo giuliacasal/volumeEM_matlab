@@ -2,7 +2,7 @@
 
 
 clear all;
-filename = 'j7784_bv2_10nm_ECnucleus';
+filename = 'J7568-EPI-BV1-5nm';
 addpath('data')
 
 pericyteImg = tiffreadVolume(sprintf('data/%s.tif',filename)); % pericyte
