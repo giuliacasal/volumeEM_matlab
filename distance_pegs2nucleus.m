@@ -47,16 +47,9 @@ rp_peg=regionprops(cc_peg);
 
 for i = 1:n_peg
 
-    % find all pixels for peg i and take the mean of their x, y and z
-    %I = cc_peg.PixelIdxList{i};
     x_peg(i) = rp_peg(i).Centroid(1).*dx;
     y_peg(i) = rp_peg(i).Centroid(2).*dy;
     z_peg(i) = rp_peg(i).Centroid(3).*dz;
-
-%     I = cc_peg.PixelIdxList{i};
-%     x_peg(i) = mean(X(I)).*dx;
-%     y_peg(i) = mean(Y(I)).*dy;
-%     z_peg(i) = mean(Z(I)).*dz;
 
 end
 
@@ -89,9 +82,6 @@ d_peg = zeros(n_peg,n_nuc);
 
 
 for i = 1 : n_nuc
-
-    % find all pixels of the nuclei
-     %I = cc_nuc.PixelIdxList{i};
    
      % going through all pegs
     for j = 1 : n_peg
@@ -137,7 +127,6 @@ for i = 1 : length(z)
 
     pause(0); drawnow
      
-
 
 end
 view(45,15)
