@@ -2,7 +2,7 @@
 
 
 clear all;
-filename = 'J7568-EPI-BV1-5nm';
+filename = 'J7784-BV1-10nm-ECnuclei';
 addpath('data')
 
 pericyteImg = tiffreadVolume(sprintf('data/%s.tif',filename)); % pericyte
@@ -11,18 +11,28 @@ cc = bwconncomp(pericyteImg);
 
 n = cc.NumObjects;
 
+%in case smaller, reduce number
+threshSize = 1e2;
 
+ii = 0;
 for i = 1 : n
 
     N = zeros(size(pericyteImg));
 
-    I = cc.PixelIdxList{i};
+    if length(cc.PixelIdxList{i})>threshSize
 
-    N(I) = 1;
+        ii = ii + 1;
 
-    output_file1 = sprintf('data/%s_Nuc%i.tif',filename,i);
-    for k = 1:size(N, 3)
-        imwrite(N(:, :, k), output_file1, 'WriteMode', 'append',  'Compression','none');
+        I = cc.PixelIdxList{i};
+    
+        N(I) = 1;
+    
+        output_file1 = sprintf('data/%s_Nuc%i.tif',filename,ii);
+        for k = 1:size(N, 3)
+            imwrite(N(:, :, k), output_file1, 'WriteMode', 'append',  'Compression','none');
+        end
+
+        fprintf('Number of nuclei: %i \n', ii)
     end
 
 
