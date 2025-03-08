@@ -5,13 +5,13 @@ clear
 % would you like to load yuour data?
 loadData = 1; % 1 for yes, 0 for no
 
-dataName = 'J7568-epi-bv-2';
+dataName = 'J7571_bv1';
 
 addpath('data')
 if loadData == 1
     clearvars -except dataName;
-    PegImg = tiffreadVolume(sprintf('data/%s-5nm-PCpeg.tif',dataName)); % pericyte
-    NucleusImg = tiffreadVolume(sprintf('data/%s-5nm-ECn.tif',dataName)); % pericyte
+    PegImg = tiffreadVolume(sprintf('data/%s_10nm_PCpegs.tif',dataName)); % pericyte
+    NucleusImg = tiffreadVolume(sprintf('data/%s_10nm_PCn.tif',dataName)); % pericyte
 end
 
 mkdir(sprintf('%s',dataName))
@@ -21,8 +21,8 @@ mkdir(sprintf('%s',dataName))
 % pericytePerimeter3d = bwperim(pericyteImg, 4);
 
 % Voxel dimensions in nanometers
-dx = 5; % x-dimension (nm)
-dy = 5; % y-dimension (nm)
+dx = 10; % x-dimension (nm)
+dy = 10; % y-dimension (nm)
 dz = 70; % z-dimension (nm)
 
 % dims
@@ -134,7 +134,7 @@ end
 % draws shortest path between each peg and nucleus
 for j = 1 : n_peg
     plot3([x_nuc(i_nuc(j)) y_peg(j)],[y_nuc(i_nuc(j)) x_peg(j)],[z_nuc(i_nuc(j)) z_peg(j)],'--k')
-
+    
 end
 
 

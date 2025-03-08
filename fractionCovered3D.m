@@ -4,19 +4,18 @@ loadData = 1; % 1 for yes, 0 for no
 
 
 
-
 addpath('data')
 if loadData == 1
     clear all;
-    E = tiffreadVolume('data/J7568-EPI-BV1-EC'); % endo
-    P = tiffreadVolume('data/J7568-EPI-BV1-PC'); % pericyt
+    E = tiffreadVolume('data/J7571-epibv3-10nm-EC.tif'); % endo
+    P = tiffreadVolume('data/J7571-epibv3-10nm-PC.tif'); % pericyt
 end
 
 % if plotting results plt = 1, if not plt =0
 plt = 1;
 
 % threshold distance
-contactDistance = 20; % nm
+contactDistance = 30; % nm
 coveredDistance = 150; % nm
 
 
@@ -24,8 +23,8 @@ coveredDistance = 150; % nm
 
 % dimensions
 dz = 70; %nm
-dx = 5; %nm
-dy = 5; %nm
+dx = 10; %nm
+dy = 10; %nm
 
 
 

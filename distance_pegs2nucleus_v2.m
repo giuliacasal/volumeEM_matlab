@@ -97,7 +97,7 @@ for j = 1 : n_peg
 end
 
 T = array2table([x_peg, y_peg, z_peg, d_peg]);
-T.Properties.VariableNames = {'x','y','z','d'};
+%T.Properties.VariableNames = {'x','y','z','d'};
 writetable(T,sprintf('%s/pegPositions.csv',dataName))
 %csvwrite(sprintf('%s/pegPositions.csv'),[x_peg, y_peg, z_peg, d_peg])
 % n_peg, x_peg, y_peg, z_peg, d_peg,
@@ -134,7 +134,6 @@ end
 % if data does not line up 3. change values x, y here 
 for j = 1 : n_peg
     plot3([y_nuc(i_nuc(j)) y_peg(j)],[x_nuc(i_nuc(j)) x_peg(j)],[z_nuc(i_nuc(j)) z_peg(j)],'--k')
-
 end
 
 view(45,15)

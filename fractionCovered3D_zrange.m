@@ -2,11 +2,13 @@
 % would you like to load yuour data?
 loadData = 1; % 1 for yes, 0 for no
 
+dataName = 'J7571_bv1';
+
 addpath('data')
 if loadData == 1
-    clear all;
-    endotheliumImg = tiffreadVolume('data/j7784_bv2_10nm_ECfilled.tif'); % endothelium
-    pericyteImg = tiffreadVolume('data/j7784_bv2_10nm_PC.tif'); % pericyte
+    clearvars -except dataName;
+    PegImg = tiffreadVolume(sprintf('data/%s_10nm_PCpegs.tif',dataName)); % pericyte
+    NucleusImg = tiffreadVolume(sprintf('data/%s_10nm_PCn.tif',dataName)); % pericyte
 end
 
 % if plotting results plt = 1, if not plt =0
@@ -42,8 +44,8 @@ zSliceStart = 1;
 zSlices = (1 : zLength) .* dz;
 
 % Define the range of z-slices to analyze
-zMin = 290; % Example minimum z-slice
-zMax = 299; % Example maximum z-slice
+zMin = 363; %  minimum z-slice
+zMax = 513; %  maximum z-slice
 
 % Ensure the range is within the available slices
 zMin = max(zMin, zSliceStart);
