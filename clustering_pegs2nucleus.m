@@ -101,13 +101,30 @@ i_nuc = zeros(n_peg,n_nuc);
 % Define clustering parameters
 pegCoords = [x_peg, y_peg, z_peg];
 
-epsilon = 1000; % Maximum distance for neighbourhood
+epsilon = 800; % Maximum distance for neighbourhood
 minPts = 3;    % Minimum pegs required for a cluster
 
 clusterLabels = dbscan(pegCoords, epsilon, minPts);
 
+uniqueClusters = unique(clusterLabels);
+numClusters = sum(uniqueClusters > 0); % Ignore noise (-1)
+
+fprintf('Number of clusters: %d \n',numClusters);
+
 % Convert DBSCAN labels to a logical clustered variable
 isClustered = clusterLabels > 0; % Ignore noise (-1)
+
+% Compute total number of pegs
+totalPegs = length(clusterLabels);
+
+% Count the number of pegs that belong to a cluster (excluding noise, -1)
+clusteredPegs = sum(clusterLabels > 0);
+
+% Compute percentage of clustered pegs
+percentageClustered = (clusteredPegs / totalPegs) * 100;
+
+% Print the result
+fprintf('Percentage of pegs in a cluster: %.2f%%\n', percentageClustered);
 
 figure(8); cla; hold on; axis equal; set(gca,'box','on')
 
@@ -126,15 +143,16 @@ end
 
 for i = 1:n_peg
     if isClustered(i)
-        plot3(pegCoords(i,2), pegCoords(i,1), pegCoords(i,3), 'o', 'MarkerEdgeColor', [0, 1, 0], 'MarkerFaceColor', [0, 1, 0], 'MarkerSize', 6) % Green for clustered
+        plot3(pegCoords(i,2), pegCoords(i,1), pegCoords(i,3), 'o', 'MarkerEdgeColor', [0, 0.5, 0.5], 'MarkerFaceColor', [0, 0.5, 0.5], 'MarkerSize', 6) % Green for clustered
     else
-        plot3(pegCoords(i,2), pegCoords(i,1), pegCoords(i,3), 'o', 'MarkerEdgeColor', [1, 0, 0], 'MarkerFaceColor', [1, 0, 0], 'MarkerSize', 6) % Red for isolated
+        plot3(pegCoords(i,2), pegCoords(i,1), pegCoords(i,3), 'o', 'MarkerEdgeColor', [0.4, 0.2, 0], 'MarkerFaceColor', [0.4, 0.2, 0], 'MarkerSize', 6) % Red for isolated
     end
 end
 
 view(45,15)
-%T = array2table([x_peg, y_peg, z_peg, d_peg]);
-%T.Properties.VariableNames = {'x','y','z','d'};
-%writetable(T,sprintf('%s/clustering_pegs.csv',dataName))
-%csvwrite(sprintf('%s/pegPositions.csv'),[x_peg, y_peg, z_peg, d_peg])
-% n_peg, x_peg, y_peg, z_peg, d_peg,
+exportgraphics(gcf,sprintf('%s/3Dplot.png',dataName),'resolution',1000)
+
+statsTable = table(numClusters, percentageClustered, ...
+    'VariableNames', {'NumClusters', 'PercentageClustered'});
+
+writetable(statsTable, sprintf('%s/clustering_summary.csv', dataName));
