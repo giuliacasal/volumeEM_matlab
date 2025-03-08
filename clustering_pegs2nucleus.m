@@ -99,15 +99,15 @@ i_nuc = zeros(n_peg,n_nuc);
 % end
 
 % Define clustering parameters
-maxDist = 1000; % Clustering distance threshold
-
 pegCoords = [x_peg, y_peg, z_peg];
 
-D = pdist2(pegCoords, pegCoords); 
-D(D == 0) = Inf; % Ignore self-distances
-minDists = min(D, [], 2); % Nearest neighbour distance for each peg
+epsilon = 1000; % Maximum distance for neighbourhood
+minPts = 3;    % Minimum pegs required for a cluster
 
-isClustered = minDists <= maxDist;
+clusterLabels = dbscan(pegCoords, epsilon, minPts);
+
+% Convert DBSCAN labels to a logical clustered variable
+isClustered = clusterLabels > 0; % Ignore noise (-1)
 
 figure(8); cla; hold on; axis equal; set(gca,'box','on')
 
